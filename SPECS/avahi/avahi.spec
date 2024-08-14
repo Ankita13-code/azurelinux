@@ -3,7 +3,7 @@
 Summary:        Local network service discovery
 Name:           avahi
 Version:        0.8
-Release:        1%{?dist}
+Release:        2%{?dist}
 License:        LGPLv2+
 Vendor:         Microsoft Corporation
 Distribution:   Azure Linux
@@ -175,6 +175,10 @@ rm -fv docs/INSTALL
 %build
 # Use autogen to kill rpaths
 rm -fv missing
+
+# TESTING
+rm /usr/lib64/libssp.so*
+
 NOCONFIGURE=1 ./autogen.sh
 
 # Note that "--with-distro=none" is necessary to prevent initscripts from being installed
@@ -405,6 +409,9 @@ exit 0
 %endif
 
 %changelog
+* Wed Aug 14 2024 Chris Co <chrco@microsoft.com> - 0.8-2
+- rebuilt
+
 * Wed Apr 20 2022 Olivia Crain <oliviacrain@microsoft.com> - 0.8-1
 - Upgrade to latest upstream version to fix CVE-2017-6519
 - Add upstream patch to fix CVE-2021-3502
