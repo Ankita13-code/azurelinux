@@ -177,7 +177,7 @@ rm -fv docs/INSTALL
 rm -fv missing
 
 # TESTING
-rm /usr/lib64/libssp.so*
+rm /usr/lib64/libssp.*
 
 NOCONFIGURE=1 ./autogen.sh
 
