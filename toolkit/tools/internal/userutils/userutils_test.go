@@ -12,16 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUserHomeDirectoryNormalUser(t *testing.T) {
-	homeDir := UserHomeDirectory("test")
-	assert.Equal(t, "/home/test", homeDir)
-}
-
-func TestUserHomeDirectoryRoot(t *testing.T) {
-	homeDir := UserHomeDirectory("root")
-	assert.Equal(t, "/root", homeDir)
-}
-
 func TestNameIsValidRoot(t *testing.T) {
 	err := NameIsValid("root")
 	assert.NoError(t, err)

@@ -28,9 +28,17 @@ func AddOrUpdateUsers(users []imagecustomizerapi.User, baseConfigPath string, im
 }
 
 func addOrUpdateUser(user imagecustomizerapi.User, baseConfigPath string, imageChroot safechroot.ChrootInterface) error {
-	var err error
+	// Check if the user already exists.
+	userExists, err := userutils.UserExists(user.Name, imageChroot)
+	if err != nil {
+		return err
+	}
 
-	logger.Log.Infof("Adding/updating user (%s)", user.Name)
+	if userExists {
+		logger.Log.Infof("Updating user (%s)", user.Name)
+	} else {
+		logger.Log.Infof("Adding user (%s)", user.Name)
+	}
 
 	hashedPassword := ""
 	if user.Password != nil {
@@ -63,12 +71,6 @@ func addOrUpdateUser(user imagecustomizerapi.User, baseConfigPath string, imageC
 		}
 	}
 
-	// Check if the user already exists.
-	userExists, err := userutils.UserExists(user.Name, imageChroot)
-	if err != nil {
-		return err
-	}
-
 	if userExists {
 		if user.UID != nil {
 			return fmt.Errorf("cannot set UID (%d) on a user (%s) that already exists", *user.UID, user.Name)
@@ -79,10 +81,12 @@ func addOrUpdateUser(user imagecustomizerapi.User, baseConfigPath string, imageC
 				user.HomeDirectory, user.Name)
 		}
 
-		// Update the user's password.
-		err = userutils.UpdateUserPassword(imageChroot.RootDir(), user.Name, hashedPassword)
-		if err != nil {
-			return err
+		if user.Password != nil {
+			// Update the user's password.
+			err = userutils.UpdateUserPassword(imageChroot.RootDir(), user.Name, hashedPassword)
+			if err != nil {
+				return err
+			}
 		}
 	} else {
 		var uidStr string
@@ -99,7 +103,7 @@ func addOrUpdateUser(user imagecustomizerapi.User, baseConfigPath string, imageC
 
 	// Set user's password expiry.
 	if user.PasswordExpiresDays != nil {
-		err = installutils.Chage(imageChroot, *user.PasswordExpiresDays, user.Name)
+		err = installutils.Chage(imageChroot, int64(*user.PasswordExpiresDays), user.Name)
 		if err != nil {
 			return err
 		}
@@ -112,6 +116,7 @@ func addOrUpdateUser(user imagecustomizerapi.User, baseConfigPath string, imageC
 			return err
 		}
 	}
+
 	// Set user's secondary groups.
 	err = installutils.ConfigureUserSecondaryGroupMembership(imageChroot, user.Name, user.SecondaryGroups)
 	if err != nil {
